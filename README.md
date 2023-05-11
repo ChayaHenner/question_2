@@ -27,4 +27,8 @@ Note that the server responds with error messages and appropriate HTTP status co
   adding new employee to database
   ![image](https://github.com/ChayaHenner/question_2/assets/132666389/037aa11f-13c2-49f3-b27c-d85e208466db)
   
-  
+  ![Screens![Screenshot 2023-05-11 215630](https://github.com/ChayaHenner/question_2/assets/132666389/9f3bfa0e-1078-4f47-bb24-796a6bb5b64f)
+hot 2023-05-11 220257](https://github.com/ChayaHenner/question_2/assets/132666389/3dafbd3b-0cfd-49e6-9206-0250d87d2d9e)
+
+![Screen![Screenshot 2023-05-11 215425](https://github.com/ChayaHenner/question_2/assets/132666389/8fcb3df8-d69d-4250-8b7e-288efd41d208)
+shot 2023-05-11 215548](https://github.com/ChayaHenner/question_2/assets/132666389/3315fd6b-3e97-4def-8da0-ecbc69791a7e)
