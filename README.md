@@ -21,3 +21,10 @@ This endpoint is used for adding a new employee to the database. The employee da
 The server uses SQLite to connect to the database and retrieve data. The database path is set to C:\Users\This_user\Desktop\hadassim_project\question_2_update\server.db and can be modified as needed.
 
 Note that the server responds with error messages and appropriate HTTP status codes if invalid data or database errors occur.
+  ![Screenshot 2023-05-11 212943](https://github.com/ChayaHenner/question_2/assets/132666389/e0a9a004-14c7-4567-a27e-d73e045bb76b)
+
+  screenshots
+  adding new employee to database
+  ![image](https://github.com/ChayaHenner/question_2/assets/132666389/037aa11f-13c2-49f3-b27c-d85e208466db)
+  
+  
