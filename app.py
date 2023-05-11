@@ -27,7 +27,7 @@ def getCovidVacs(id):
             else:  return "this employee did not get any vacs" ,200
         
     except Exception as e:
-       return "internal server error" ,500 
+       return "no vacs" ,500 
     c.close()
     conn.close() 
 
@@ -71,14 +71,14 @@ def get(id,request_num):
      
        
   
-#good.fix should give all  
+#all people that got vaccines and the last vaccine they got  
 @app.route('/all/<code>')          
 def getAll(code):
     if code=='8068':
         conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
         try:
-            c.execute("""select   FIRST_NAME || ' ' ||LAST_NAME , ADDR_ST || ' ' || ADDR_ST_NUM || ' , ' || ADDR_CITY , DOB , PHONE || ' , ' || CELL_PHONE ,DATE_POSITIVE ,DATE_RECOVERY,DATE_VAC,VAC_MAN,VAC_NUM 
+            c.execute("""select   FIRST_NAME || ' ' ||LAST_NAME , ADDR_ST || ' ' || ADDR_ST_NUM || ' , ' || ADDR_CITY , DOB , PHONE || ' , ' || CELL_PHONE ,DATE_POSITIVE ,DATE_RECOVERY,DATE_VAC,VAC_MAN,MAX(VAC_NUM)
                         from EMPLOYEE 
                         INNER JOIN COVIDVAC on  COVIDVAC.EMPLOYEE_ID= EMPLOYEE.ID 
                         ORDER BY LAST_NAME ASC,VAC_NUM ASC """) 
@@ -96,6 +96,33 @@ def getAll(code):
         conn.close()
     else:  
         return jsonify("wrong code") ,400  
+    
+
+  
+#returns the whole database only if have the code (8068)  
+@app.route('/all_2/<code>')          
+def getAll2(code):
+    if code=='8068':
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        try:
+            c.execute("""select  FIRST_NAME || ' ' ||LAST_NAME , ADDR_ST || ' ' || ADDR_ST_NUM || ' , ' || ADDR_CITY , DOB , PHONE || ' , ' || CELL_PHONE ,DATE_POSITIVE ,DATE_RECOVERY , ID
+                        from EMPLOYEE 
+                        ORDER BY LAST_NAME ASC """) 
+            
+            employees = [
+                dict(name=row[0],address=row[1],dob=row[2],phonenumbers=row[3],datepositive=row[4],daterecovery=row[5],id=row[6],covid_vacs=getCovidVacs(id))
+                for row in c.fetchall()
+            ]
+            if employees is not None:
+                return jsonify(employees), 200 
+
+        except Exception as e:
+            return "internal server error" ,500 
+        c.close()
+        conn.close()
+    else:  
+        return jsonify("wrong code") ,400      
 
 
 @app.route('/new_employee', methods=['POST'])
@@ -119,7 +146,8 @@ def post_employee():
     c = conn.cursor()
     try:
          if check_values(ID,FIRST_NAME,LAST_NAME,ADDR_CITY,ADDR_ST, ADDR_ST_NUM,DOB,PHONE,CELL_PHONE):
-            c.execute("INSERT INTO EMPLOYEE (id, first_name,last_name,ADDR_CITY,ADDR_ST,ADDR_ST_NUM,DOB,PHONE,CELL_PHONE) VALUES (?,?,?,?,?,?,?,?,?)", (str(ID), FIRST_NAME,LAST_NAME,ADDR_CITY,ADDR_ST,ADDR_ST_NUM,DOB,PHONE,CELL_PHONE))
+            c.execute("INSERT INTO EMPLOYEE (id, first_name,last_name,ADDR_CITY,ADDR_ST,ADDR_ST_NUM,DOB,PHONE,CELL_PHONE,DATE_POSITIVE,DATE_RECOVERY) VALUES (?,?,?,?,?,?,?,?,?,?,?)", (str(ID), FIRST_NAME,LAST_NAME,ADDR_CITY,ADDR_ST,ADDR_ST_NUM,DOB,PHONE,CELL_PHONE,DATE_POSITIVE,DATE_RECOVERY))
+        #            c.execute("INSERT INTO EMPLOYEE (id, first_name,last_name,ADDR_CITY,ADDR_ST,ADDR_ST_NUM,DOB,PHONE,CELL_PHONE) VALUES (?,?,?,?,?,?,?,?,?)", (str(ID), FIRST_NAME,LAST_NAME,ADDR_CITY,ADDR_ST,ADDR_ST_NUM,DOB,PHONE,CELL_PHONE))
          else: return "entered invalid values" , 405
     except Exception as e:
             conn.commit()
@@ -128,7 +156,7 @@ def post_employee():
 
     conn.commit()
     conn.close()
-    return "all good iyH" ,200       
+    return "added new employee to table" ,200       
 
     
 #check values r ok
@@ -140,12 +168,9 @@ def check_values(id,firstname,lastname,city,street,streetnum,DOB,phone,cellphone
 
 
 
-#good post
+#gpost new vaccine that employee got that day and updates what number vaccine based on previous vaccines in database
 @app.route('/new_vac', methods=['POST'])
 def post_data_2():
-    # data = {}
-    # for key, value in request.args.items():
-    #     data[key] = value
 
     id = request.args['id']
     vacman = request.args['vacman']
@@ -153,12 +178,17 @@ def post_data_2():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("select MAX(VAC_NUM)  from COVIDVAC WHERE EMPLOYEE_ID = ?",(str(id),)) 
+    num=c.fetchone()
+    if num!=(None,):
+        num=int(num[0]) #number of vac update it
+        c.execute("INSERT INTO COVIDVAC VALUES(?,?,?,?)",(str(id),str(datetime.now())[:10],vacman,num+1,))
+    else:
+        c.execute("INSERT INTO COVIDVAC VALUES(?,?,?,?)",(str(id),str(datetime.now())[:10],vacman,1,))
 
-    num=int(c.fetchone()[0]) #number of vac update it
-    c.execute("INSERT INTO COVIDVAC VALUES(?,?,?,?)",(str(id),str(datetime.now())[:10],vacman,num+1,))
+
     conn.commit()
     conn.close()
-    return "all good iyH" ,200  
+    return "added vaccine number"+str(num) ,200  
 
 
 if __name__ == "__main__":
